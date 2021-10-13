@@ -1,4 +1,5 @@
 import requests
+from pprint import pprint
 import os
 
 TEQUILA_ENDPOINT = "https://tequila-api.kiwi.com"
@@ -24,33 +25,30 @@ class FlightSearch:
         results = response.json()['locations'][0]['code']
         return results
 
-    # FROM_LOCATION = 'ATL'
-    #
-    # locations_endpoint = f"{TEQUILA_ENDPOINT}/v2/search"
-    #
-    # date = dt.datetime.today()
-    # formatted_date = date.strftime("%m/%d/%Y")
-    # days = dt.timedelta(days=6 * 30)
-    #
-    # future = date + days
-    # from_date = future.strftime("%m/%d/%Y")
-    # # class FlightData:
-    # #     pass
-    #
-    # header = {
-    #     'apikey': TEQUILA_APIKEY,
-    #     'Content-Encoding': 'gzip'
-    # }
-    #
-    # params = {
-    #     'fly_from': FROM_LOCATION,
-    #     'fly_to': 'NYC',
-    #     'date_from': formatted_date,
-    #     'date_to': from_date,
-    #     'flight_type': 'round',
-    #     'curr': 'USD'
-    # }
-    #
-    # response = requests.get(url=locations_endpoint, params=params, headers=header)
-    # req = response.json()
+    def cheap_price(self, from_location, to_location, formatted_date, from_date):
+
+        locat_endpoint = f"{TEQUILA_ENDPOINT}/v2/search"
+
+        header = {
+            'apikey': TEQUILA_APIKEY,
+            'Content-Encoding': 'gzip'
+        }
+
+        params = {
+            'fly_from': from_location,
+            'fly_to': to_location,
+            'date_from': formatted_date,
+            'date_to': from_date,
+            'flight_type': 'round',
+            'nights_in_dst_from': '7',
+            'nights_in_dst_to': '28',
+            'curr': 'USD',
+            'limit': '1'
+        }
+
+        response = requests.get(url=locat_endpoint, params=params, headers=header)
+        data = response.json()['data'][0]['price']
+        return data
+
+
 

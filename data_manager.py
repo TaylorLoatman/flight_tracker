@@ -2,17 +2,15 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import os
 
-
-
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SERVICE_ACCOUNT_FILE = 'keys.json'
 # The ID  spreadsheet.
 SAMPLE_SPREADSHEET_ID = os.environ.get('GSHEET_ID')
 
+
 class DataManager:
 
     def __init__(self):
-        # creds = None
         self.creds = service_account.Credentials.from_service_account_file(
                 SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
@@ -27,6 +25,11 @@ class DataManager:
         values = result.get('values', [])
         return values
 
+    def get_lowest_price_data(self):
+        result = self.sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                         range='prices!C2:C10').execute()
+        values = result.get('values', [])
+        return values
 
     def update_destenation_code(self, flight_codes):
 
