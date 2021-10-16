@@ -1,41 +1,38 @@
-from googleapiclient.discovery import build
-from google.oauth2 import service_account
+import gspread
+from google.oauth2.service_account import Credentials
 import os
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'keys.json'
 # The ID  spreadsheet.
 SAMPLE_SPREADSHEET_ID = os.environ.get('GSHEET_ID')
 
-
 class DataManager:
 
     def __init__(self):
-        self.creds = service_account.Credentials.from_service_account_file(
+        #authorize account
+        self.creds = Credentials.from_service_account_file(
                 SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        self.client = gspread.authorize(self.creds)
 
-        self.service = build('sheets', 'v4', credentials=self.creds)
+        # Create Spreadsheet
+        self.spreadsheet = self.client.open('Flight Deals')
+        self.worksheet = self.spreadsheet.worksheet('prices')
 
-        # Call the Sheets API
-        self.sheet = self.service.spreadsheets()
 
-    def get_destenation_data(self):
-        result = self.sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range='prices!A2:A10').execute()
-        values = result.get('values', [])
-        return values
+    def get_dest_data(self):
+        result = self.worksheet.col_values(1)
+        return result
 
     def get_lowest_price_data(self):
-        result = self.sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                         range='prices!C2:C10').execute()
-        values = result.get('values', [])
-        return values
+        result = self.worksheet.col_values(3)
+        return result
 
-    def update_destenation_code(self, flight_codes):
+    def update_dest_code(self, flight_codes):
 
-        request = self.sheet.values().update(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                        range='prices!B2:B10',
-                                        valueInputOption='USER_ENTERED',
-                                        body={'values':flight_codes}).execute()
+        request = self.worksheet.update('B2:B10', flight_codes)
         return request
 
+    def fill_low(self, update_low):
+        request = self.worksheet.update('C2:C10', update_low)
+        return request
